@@ -583,7 +583,7 @@ config ARCH_SUPPORTS_SHADOW_CALL_STACK
 
 config SHADOW_CALL_STACK
 	bool "Clang Shadow Call Stack"
-	depends on ARCH_SUPPORTS_SHADOW_CALL_STACK
+#	depends on ARCH_SUPPORTS_SHADOW_CALL_STACK
 	help
 	  This option enables Clang's Shadow Call Stack, which uses a
 	  shadow stack to protect function return addresses from being
@@ -1025,7 +1025,7 @@ config ARCH_HAS_RELR
 
 config RELR
 	bool "Use RELR relocation packing"
-	depends on ARCH_HAS_RELR && TOOLS_SUPPORT_RELR
+#	depends on ARCH_HAS_RELR && TOOLS_SUPPORT_RELR
 	default y
 	help
 	  Store the kernel's dynamic relocations in the RELR relocation packing
