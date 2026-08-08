@@ -97,6 +97,53 @@ output_dir=out
 make O="$output_dir" \
             vendor/${DEVICE}_defconfig
 
+# ============================================================
+# AR9271 / ath9k_htc USB WiFi Driver
+# ============================================================
+
+echo "::group::AR9271 / ath9k_htc Driver Configuration"
+echo "[INFO] Enabling AR9271 / ath9k_htc support..."
+
+scripts/config --file "$output_dir/.config" \
+    -m MAC80211 \
+    -m ATH_COMMON \
+    -m ATH9K_HW \
+    -m ATH9K_COMMON \
+    -m ATH9K_HTC
+
+echo "[INFO] Resolving AR9271 driver dependencies..."
+
+make O="$output_dir" ARCH="$ARCH" olddefconfig
+
+echo
+echo "[INFO] AR9271 driver configuration:"
+grep -E 'CONFIG_(CFG80211|MAC80211|ATH_COMMON|ATH9K)' \
+    "$output_dir/.config"
+
+echo "::endgroup::"
+
+# ============================================================
+# AR9271 / ath9k_htc Build Log
+# ============================================================
+
+echo "::group::AR9271 / ath9k_htc Build Information"
+
+echo "[INFO] Target chipset : AR9271"
+echo "[INFO] Driver        : ath9k_htc"
+echo "[INFO] Interface     : USB"
+echo "[INFO] Module mode   : M"
+
+echo "[INFO] Expected modules:"
+echo "       mac80211.ko"
+echo "       ath.ko"
+echo "       ath9k_hw.ko"
+echo "       ath9k_common.ko"
+echo "       ath9k_htc.ko"
+
+echo "::endgroup::"
+
+# ============================================================
+
     # Компиляция ядра
     make -j $(nproc) \
                 O="$output_dir" \
@@ -131,11 +178,11 @@ if grep -q -E "Ошибка 2|Error 2" build.log; then
     echo "Ошибка: Сборка завершилась с ошибкой"
 
     curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@olzhaskernel" \
+    -d chat_id="@WadahRuntahGH_bot" \
     -d text="Ошибка в компиляции!" \
     -d message_thread_id="2"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@olzhaskernel" \
+    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@WadahRuntahGH_bot" \
     -F document=@"./build.log" \
     -F message_thread_id="2"
 else
@@ -145,11 +192,11 @@ else
     7z a -mx9 perf-$DEVICE-$PERF_BUILD_DATE.zip * -x!*.zip
     
     curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@olzhaskernel" \
+    -d chat_id="@WadahRuntahGH_bot" \
     -d text="Компиляция завершилась успешно! Время выполнения: $elapsed_time секунд" \
     -d message_thread_id="2"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@olzhaskernel" \
+    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@WadahRuntahGH_bot" \
     -F document=@"./perf-$DEVICE-$PERF_BUILD_DATE.zip" \
     -F caption="perf ${VERSION}${PREFIX} (${BUILD_TYPE}) branch: ${BRANCH}" \
     -F message_thread_id="2"
