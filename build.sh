@@ -175,31 +175,27 @@ cd "$KERNEL_PATH"
 # Проверка успешности сборки
 if grep -q -E "Ошибка 2|Error 2" build.log; then
     cd "$KERNEL_PATH"
-    echo "Ошибка: Сборка завершилась с ошибкой"
+    echo "Error: Build failed with an error"
 
     curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@WadahRuntahGH_bot" \
-    -d text="Ошибка в компиляции!" \
-    -d message_thread_id="2"
+    -d chat_id="$CHAT_ID" \
+    -d text="Compilation error!"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@WadahRuntahGH_bot" \
-    -F document=@"./build.log" \
-    -F message_thread_id="2"
+    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=$CHAT_ID" \
+    -F document=@"./build.log"
 else
-    echo "Общее время выполнения: $elapsed_time секунд"
+    echo "Total build time: $elapsed_time seconds"
     # Перемещение в каталог Perf+ и создание архива
     cd "$PERF_DIR"
     7z a -mx9 perf-$DEVICE-$PERF_BUILD_DATE.zip * -x!*.zip
     
     curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@WadahRuntahGH_bot" \
-    -d text="Компиляция завершилась успешно! Время выполнения: $elapsed_time секунд" \
-    -d message_thread_id="2"
+    -d chat_id="$CHAT_ID" \
+    -d text="Compilation completed successfully! Total build time: $elapsed_time seconds"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@WadahRuntahGH_bot" \
+    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=$CHAT_ID" \
     -F document=@"./perf-$DEVICE-$PERF_BUILD_DATE.zip" \
-    -F caption="perf ${VERSION}${PREFIX} (${BUILD_TYPE}) branch: ${BRANCH}" \
-    -F message_thread_id="2"
+    -F caption="perf ${VERSION}${PREFIX} (${BUILD_TYPE}) branch: ${BRANCH}"
 
     rm -rf perf-$DEVICE-$PERF_BUILD_DATE.zip
 fi
