@@ -186,6 +186,39 @@ if grep -q -E "Ошибка 2|Error 2" build.log; then
     -F document=@"./build.log"
 else
     echo "Total build time: $elapsed_time seconds"
+
+        # ============================================================
+    # Copy AR9271 / ath9k_htc modules to Perf+
+    # ============================================================
+
+    echo "::group::AR9271 / ath9k_htc modules"
+
+    mkdir -p "$PERF_DIR/AR9271"
+
+    find "$output_dir" -type f \
+        \( \
+            -name "ath.ko" \
+            -o -name "ath9k_hw.ko" \
+            -o -name "ath9k_common.ko" \
+            -o -name "ath9k_htc.ko" \
+            -o -name "mac80211.ko" \
+        \) \
+        -exec cp -v {} "$PERF_DIR/AR9271/" \;
+
+    echo "[INFO] AR9271 modules:"
+    ls -lh "$PERF_DIR/AR9271/"
+
+    MODULE_COUNT=$(find "$PERF_DIR/AR9271" -type f -name "*.ko" | wc -l)
+
+    if [ "$MODULE_COUNT" -ne 5 ]; then
+        echo "::error::Expected 5 AR9271 modules, found $MODULE_COUNT"
+        find "$PERF_DIR/AR9271" -type f -name "*.ko" -print
+        exit 1
+    fi
+
+    echo "[OK] All 5 AR9271 modules are ready."
+    echo "::endgroup::"
+
     # Перемещение в каталог Perf+ и создание архива
     cd "$PERF_DIR"
     7z a -mx9 perf-$DEVICE-$PERF_BUILD_DATE.zip * -x!*.zip
