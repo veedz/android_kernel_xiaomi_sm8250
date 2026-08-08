@@ -7,6 +7,7 @@ export PREFIX="e"
 export TYPE="early"
 export BUILD_TYPE="Testing Only"
 #export TGTOKEN=bot_token
+#export CHAT_ID=chat_id
 
 # Начало отсчета времени выполнения скрипта
 start_time=$(date +%s)
