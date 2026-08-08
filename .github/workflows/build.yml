@@ -38,4 +38,4 @@ jobs:
           bash build.sh
         env:
           TGTOKEN: ${{ secrets.TGTOKEN }}
-          
+          CHAT_ID: ${{ secrets.CHAT_ID }}
