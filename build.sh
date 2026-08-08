@@ -161,6 +161,53 @@ echo "::endgroup::"
                 LLVM_IAS=1 \
                 V=$VERBOSE 2>&1 | tee build.log
                 
+# ============================================================
+# Verify AR9271 modules
+# ============================================================
+
+echo "::group::AR9271 module verification"
+
+AR9271_MODULES=(
+    "$output_dir/drivers/net/wireless/ath/ath.ko"
+    "$output_dir/drivers/net/wireless/ath/ath9k/ath9k_hw.ko"
+    "$output_dir/drivers/net/wireless/ath/ath9k/ath9k_common.ko"
+    "$output_dir/drivers/net/wireless/ath/ath9k/ath9k_htc.ko"
+    "$output_dir/net/mac80211/mac80211.ko"
+)
+
+for module in "${AR9271_MODULES[@]}"; do
+    if [ ! -f "$module" ]; then
+        echo "::error::Missing module: $module"
+        exit 1
+    fi
+
+    echo
+    echo "===== $(basename "$module") ====="
+
+    if command -v modinfo >/dev/null 2>&1; then
+        modinfo "$module" | grep -E '^(filename|depends|vermagic):' || true
+    fi
+
+    if command -v readelf >/dev/null 2>&1; then
+        echo "--- ELF ---"
+        readelf -h "$module" | grep -E 'Class:|Machine:|Type:'
+        echo "--- sections ---"
+        readelf -S "$module" | grep -E '__versions|\.modinfo' || true
+    fi
+done
+
+echo
+echo "===== Module.symvers ====="
+
+if [ -f "$output_dir/Module.symvers" ]; then
+    echo "[OK] Module.symvers exists"
+    echo "Entries: $(wc -l < "$output_dir/Module.symvers")"
+else
+    echo "::error::Module.symvers not found"
+    exit 1
+fi
+
+echo "::endgroup::"
 
 # Предполагается, что переменная DTS установлена ранее в скрипте
 find $DTS -name '*.dtb' -exec cat {} + > $DTBPATH
